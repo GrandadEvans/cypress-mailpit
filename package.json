@@ -17,12 +17,12 @@
     "Cypress.io",
     "Mailpit"
   ],
-  "author": "John Evans <john@grandadevsna.com>",
+  "author": "John Evans <john@grandadevans.com>",
   "license": "mit",
   "bugs": {
     "url": "https://github.com/GrandadEvans/cypress-mailpit/issues"
   },
-  "homepage": "https://github.com/GrandadEvans/cypress-mailpit#readme",
+  "homepage": "https://github.com/GrandadEvans/cypress-mailpit",
   "devDependencies": {
     "cypress": "^13.6.0",
     "eslint": "^8.55.0",

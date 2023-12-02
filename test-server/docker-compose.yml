@@ -1,11 +1,11 @@
-version: '3'
+version: '4'
 services:
   web:
-   image: webdevops/php-apache-dev:7.4
+   image: webdevops/php-apache-dev:8.2
    depends_on:
-     - mailhog
+     - mailpit
    links:
-     - mailhog
+     - mailpit
    volumes:
      - ./:/var/www/html/cypress-mh-tests/
    ports:
@@ -17,8 +17,8 @@ services:
    devices:
      - /dev/fuse:/dev/fuse
 
-  mailhog:
-    image: mailhog/mailhog
+  mailpit:
+    image: axllent/mailpit
     platform: linux/amd64
     ports:
-      - "8090:8025" 
+      - "8025:8025"

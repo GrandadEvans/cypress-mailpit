@@ -1,42 +1,40 @@
 declare namespace Cypress {
   interface EndToEndConfigOptions {
-    mailHogUrl?: string;
+    mailpitUrl?: string;
   }
   interface Chainable {
-    mhGetJimMode(): Chainable<boolean>;
-    mhSetJimMode(enabled: boolean): Chainable<Cypress.Response<any>>;
-    mhDeleteAll(): Chainable<Cypress.Response<any>>;
-    mhGetAllMails(
+    mpDeleteAll(): Chainable<Cypress.Response<any>>;
+    mpGetAllMails(
       limit?: number,
       options?: Partial<Timeoutable>
-    ): Chainable<mailhog.Item[]>;
-    mhFirst(): Chainable<mailhog.Item>;
-    mhGetMailsBySubject(
+    ): Chainable<mailpit.Item[]>;
+    mpFirst(): Chainable<mailpit.Item>;
+    mpGetMailsBySubject(
       subject: string,
       limit?: number,
       options?: Partial<Timeoutable>
-    ): Chainable<mailhog.Item[]>;
-    mhGetMailsByRecipient(
+    ): Chainable<mailpit.Item[]>;
+    mpGetMailsByRecipient(
       recipient: string,
       limit?: number,
       options?: Partial<Timeoutable>
-    ): Chainable<mailhog.Item[]>;
-    mhGetMailsBySender(
+    ): Chainable<mailpit.Item[]>;
+    mpGetMailsBySender(
       from: string,
       limit?: number,
       options?: Partial<Timeoutable>
-    ): Chainable<mailhog.Item[]>;
-    mhFilterBySubject(subject: string): Chainable<mailhog.Item[]>;
-    mhFilterByRecipient(recipient: string): Chainable<mailhog.Item[]>;
-    mhFilterBySender(from: string): Chainable<mailhog.Item[]>;
-    mhGetSubject(): Chainable<string>;
-    mhGetBody(): Chainable<string>;
-    mhGetSender(): Chainable<string>;
-    mhGetRecipients(): Chainable<string[]>;
-    mhGetAttachments(): Chainable<string[]>;
-    mhHasMailWithSubject(subject: string): Chainable;
-    mhHasMailFrom(from: string): Chainable;
-    mhHasMailTo(recipient: string): Chainable;
-    mhWaitForMails(moreMailsThen?: number): Chainable;
+    ): Chainable<mailpit.Item[]>;
+    mpFilterBySubject(subject: string): Chainable<mailpit.Item[]>;
+    mpFilterByRecipient(recipient: string): Chainable<mailpit.Item[]>;
+    mpFilterBySender(from: string): Chainable<mailpit.Item[]>;
+    mpGetSubject(): Chainable<string>;
+    mpGetBody(): Chainable<string>;
+    mpGetSender(): Chainable<string>;
+    mpGetRecipients(): Chainable<string[]>;
+    mpGetAttachments(): Chainable<string[]>;
+    mpHasMailWithSubject(subject: string): Chainable;
+    mpHasMailFrom(from: string): Chainable;
+    mpHasMailTo(recipient: string): Chainable;
+    mpWaitForMails(moreMailsThen?: number): Chainable;
   }
 }
