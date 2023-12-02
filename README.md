@@ -1,5 +1,7 @@
 # cypress-mailhog
 
+## Forked on 2023-12-02 and not worked on it yet
+
 A collection of useful Cypress commands for MailHog 🐗.
 
 This package supports TypeScript out of the box.
