@@ -1,7 +1,7 @@
 {
   "name": "cypress-mailpit",
   "version": "0.0.1",
-  "description": "Cypress Commands for Mailpit",
+  "description": "Test emails in Cypress using Mailpit",
   "main": "index.js",
   "types": "types/index.d.ts",
   "scripts": {
@@ -18,6 +18,10 @@
     "Mailpit"
   ],
   "author": "John Evans <john@grandadevans.com>",
+  "contributors": [
+    "John Evans <john@grandadevans.com>",
+    "Samuel Menigat <samuel.menigat@gmail.com>"
+  ],
   "license": "mit",
   "bugs": {
     "url": "https://github.com/GrandadEvans/cypress-mailpit/issues"
