@@ -1,8 +1,21 @@
 const apiVersion = "v1";
+
 const mpApiUrl = (path) => {
   const envValue = Cypress.env("mailpitUrl");
   const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
-  return `${basePath}/${apiVersion}/api${path}`;
+  return `${basePath}/api/${apiVersion}${path}`;
+};
+
+const mpMessageSummary = (id) => {
+  const envValue = Cypress.env("mailpitUrl");
+  const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
+  return `${basePath}/api/${apiVersion}/message/${id}`;
+};
+
+const mpGetMessageContent = (id, type = 'html') => {
+  const envValue = Cypress.env("mailpitUrl");
+  const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
+  return `${basePath}/view/${id}.${type.toLowerCase()}`;
 };
 
 let mpAuth = Cypress.env("mailpitAuth") || "";
@@ -13,7 +26,9 @@ if (Cypress.env("mailpitUsername") && Cypress.env("mailpitPassword")) {
   };
 }
 
-const messages = (limit) => {
+let messageCount = 0;
+
+const refreshMessages = (limit) => {
   return cy
     .request({
       method: "GET",
@@ -23,13 +38,79 @@ const messages = (limit) => {
     })
     .then((response) => {
       if (typeof response.body === "string") {
-        return JSON.parse(response.body);
+        let parsed = JSON.parse(response.body);
+        messageCount = parsed.count;
+        messages = parsed.messages;
       } else {
-        return response.body;
+        messageCount = 0;
+        messages = [];
       }
-    })
-    .then((parsed) => parsed.items);
+    });
 };
+
+let messages = [];
+
+Cypress.Commands.add("mpGetMailsBySubject", { prevSubject: false }, (subject) => {
+  return searchMessages(`subject:"${subject}"`).then((data) => data.messages);
+});
+
+Cypress.Commands.add("mpFirst", { prevSubject: true }, (messages) => {
+  if (messages && messages.length > 0) {
+    return messages[0];
+  }
+  // You should handle the case when there are no messages as well.
+  throw new Error('No messages found.');
+});
+
+ // TODO: Change this to cy.request
+const searchMessages = (query) => {
+  return fetch(mpApiUrl(`/search?query=${query}`))
+    .then((response) => response.json())
+    .then((data) => data)
+    .catch((error) => console.error('Error:', error));
+}
+
+Cypress.Commands.add("mpDeleteAll", () => {
+  return cy.request({
+    method: "DELETE",
+    url: mpApiUrl("/messages"),
+    auth: mpAuth,
+  });
+});
+
+Cypress.Commands.add("mpGetHtml", {prevSubject: true}, (message) => {
+  return cy.request({
+    method: "GET",
+    url: mpApiUrl(`/message/${message.ID}`),
+    auth: mpAuth,
+  })
+  .then((response) => response.body.HTML);
+});
+
+/**
+
+Cypress.Commands.addQuery("mpGetAllMails", function (limit = 50, options = {}) {
+  if (messageCount > 0) {
+    return refreshMessages(limit);
+  }
+});
+
+Cypress.Commands.add("mpGetText", (message) => {
+  return cy.request({
+    method: "GET",
+    url: mpMessageSummary(message.Id),
+    auth: mpAuth,
+  })
+  .then((response) => response.body.Text);
+});
+
+Cypress.Commands.add("mpGetCount", (mails, limit = 50, options = {}) => {
+    const filter = (mails) => {
+      mails.count > 0 ? mails.messages.filter((message) => message.Subject === subject) : mails;
+    }
+    return retryFetchMessages(filter, limit, options);
+  }
+);
 
 const retryFetchMessages = (filter, limit, options = {}) => {
   const timeout = options.timeout || Cypress.config("defaultCommandTimeout") || 4000;
@@ -55,126 +136,64 @@ const retryFetchMessages = (filter, limit, options = {}) => {
   return resolve();
 };
 
-/**
- * Mail Collection
- */
-Cypress.Commands.add("mpDeleteAll", () => {
-  return cy.request({
-    method: "DELETE",
-    url: mpApiUrl("/messages"),
-    auth: mpAuth,
-  });
+Cypress.Commands.addQuery("mpGetMailsByRecipient", function (recipient, options = {}) {
+  return searchMessages(`to:"${recipient}"`);
 });
 
-Cypress.Commands.add("mpGetAllMails", (limit = 50, options = {}) => {
-  const filter = (mails) => mails;
-
-  return retryFetchMessages(filter, limit, options);
-});
-
-Cypress.Commands.add("mpFirst", { prevSubject: true }, (mails) => {
-  return Array.isArray(mails) && mails.length > 0 ? mails[0] : mails;
-});
-
-Cypress.Commands.add("mpGetMailsBySubject", (subject, limit = 50, options = {}) => {
-    const filter = (mails) =>
-      mails.filter((mail) => mail.Content.Headers.Subject[0] === subject);
-
-    return retryFetchMessages(filter, limit, options);
-  }
-);
-
-Cypress.Commands.add("mpGetMailsByRecipient", (recipient, limit = 50, options = {}) => {
-    const filter = (mails) => {
-      return mails.filter((mail) =>
-        mail.To.map(
-          (recipientObj) => `${recipientObj.Mailbox}@${recipientObj.Domain}`
-        ).includes(recipient)
-      );
-    };
-
-    return retryFetchMessages(filter, limit, options);
-  }
-);
-
-Cypress.Commands.add("mpGetMailsBySender", (from, limit = 50, options = {}) => {
-  const filter = (mails) => mails.filter((mail) => mail.Raw.From === from);
-
-  return retryFetchMessages(filter, limit, options);
+Cypress.Commands.addQuery("mpGetMailsBySender", function (from, options = {}) {
+  return searchMessages(`from:"${from}"`);
 });
 
 /**
  * Filters on Mail Collections
- */
-Cypress.Commands.add("mpFilterBySubject", { prevSubject: true }, (messages, subject) => {
-    return messages.filter((mail) => mail.Content.Headers.Subject[0] === subject);
-  }
-);
+Cypress.Commands.addQuery("mpFilterBySubject", function (messages, subject) {
+    return messages.filter((mail) => mail.Subject === subject);
+});
 
-Cypress.Commands.add("mpFilterByRecipient", { prevSubject: true }, (messages, recipient) => {
-    return messages.filter(
-      (mail) =>  mail.To.map(
-        (recipientObj) => `${recipientObj.Mailbox}@${recipientObj.Domain}`
-      ).includes(recipient)
-    );
-  }
-);
+Cypress.Commands.addQuery("mpFilterByRecipient", function (messages, recipient) {
+ return messages.filter((mail) =>  mail.To.includes(recipient));
+});
 
-Cypress.Commands.add("mpFilterBySender", { prevSubject: true }, (messages, from) => {
-    return messages.filter((mail) => mail.Raw.From === from);
-  }
-);
+Cypress.Commands.addQuery("mpFilterBySender", function (messages, from) {
+    return messages.filter((mail) => mail.From === from);
+});
 
 /**
  * Single Mail Commands and Assertions
- */
-Cypress.Commands.add("mpGetSubject", { prevSubject: true }, (mail) => {
-  return cy.wrap(mail.Content.Headers)
-           .then((headers) => headers.Subject[0]);
+Cypress.Commands.addQuery("mpGetSubject", function (mail) {
+  return mail.Subject;
 });
 
-Cypress.Commands.add("mpGetBody", { prevSubject: true }, (mail) => {
-  return cy.wrap(mail.Content)
-           .its("Body");
+Cypress.Commands.addQuery("mpGetSender", function (mail) {
+  return mail.From;
 });
 
-Cypress.Commands.add("mpGetSender", { prevSubject: true }, (mail) => {
-  return cy.wrap(mail.Raw)
-           .its("From");
-});
-
-Cypress.Commands.add("mpGetRecipients", { prevSubject: true }, (mail) => {
-  return cy.wrap(mail)
-           .then((mail) => mail.To.map(
-              (recipientObj) => `${recipientObj.Mailbox}@${recipientObj.Domain}`
-            ));
+Cypress.Commands.addQuery("mpGetRecipients", function (mail) {
+  return mail.recipient;
 });
 
 /**
  * Mail Collection Assertions
- */
-Cypress.Commands.add("mpHasMailWithSubject", (subject) => {
+Cypress.Commands.addQuery("mpHasMailWithSubject", function (subject) {
   cy.mpGetMailsBySubject(subject).should("not.be.empty");
 });
 
-Cypress.Commands.add("mpHasMailFrom", (from) => {
+Cypress.Commands.addQuery("mpHasMailFrom", function (from) {
   cy.mpGetMailsBySender(from).should("not.be.empty");
 });
 
-Cypress.Commands.add("mpHasMailTo", (recipient) => {
+Cypress.Commands.addQuery("mpHasMailTo", function (recipient) {
   cy.mpGetMailsByRecipient(recipient).should("not.be.empty");
 });
 
 /**
  * Helpers
- */
-Cypress.Commands.add("mpWaitForMails", (moreMailsThen = 0) => {
+Cypress.Commands.addQuery("mpWaitForMails", function (moreMailsThen = 0) {
   cy.mpGetAllMails().should("to.have.length.greaterThan", moreMailsThen);
 });
 
 /**
  * Attachments
- */
 Cypress.Commands.add("mpGetAttachments", { prevSubject: true }, (mail) => {
   const attachments = []; // should this be const, or let (I'd say let)
 
@@ -205,3 +224,61 @@ Cypress.Commands.add("mpGetAttachments", { prevSubject: true }, (mail) => {
 
   return cy.wrap(attachments);
 });
+*/
+
+const sampleMessages = {
+    "total": 2,
+    "unread": 2,
+    "count": 2,
+    "messages_count": 2,
+    "start": 0,
+    "tags": [],
+    "messages": [
+        {
+            "ID": "53435c87-d0c3-4bd3-8dfe-173cf560dba5",
+            "MessageID": "ca6a1583a5037878956e2d983df3ffe7@buttons.grandadevans.com",
+            "Read": false,
+            "From": {
+                "Name": "Buttons Cat Rescue",
+                "Address": "admin@buttons.grandadevans.com"
+            },
+            "To": [
+                {
+                    "Name": "",
+                    "Address": "admin@buttons.grandadevans.com"
+                }
+            ],
+            "Cc": [],
+            "Bcc": [],
+            "Subject": "Adoption Form Submission",
+            "Created": "2023-12-03T23:46:50.797Z",
+            "Tags": [],
+            "Size": 3684,
+            "Attachments": 0,
+            "Snippet": "Hi Email-type-person, This is just a email to say that somebody has taken their time to fill in an adoption form. Here is a copy of what they sent us, so that you can always find it in a search. -----..."
+        },
+        {
+            "ID": "46db884d-3d96-4126-a250-342d5f41c7ea",
+            "MessageID": "d1e09a29f6819c2ed97fbcaf1dfe37dc@buttons.grandadevans.com",
+            "Read": false,
+            "From": {
+                "Name": "Buttons Cat Rescue",
+                "Address": "admin@buttons.grandadevans.com"
+            },
+            "To": [
+                {
+                    "Name": "",
+                    "Address": "dev@buttonscatrescue.co.uk"
+                }
+            ],
+            "Cc": [],
+            "Bcc": [],
+            "Subject": "Adoption form submission (auto-reply)",
+            "Created": "2023-12-03T23:46:50.75Z",
+            "Tags": [],
+            "Size": 1197,
+            "Attachments": 0,
+            "Snippet": "-- AUTOREPLY -- Hi Billy Bob Thornton, This is just a quick email to say thanks for getting in touch, and somebody should be back in touch with you soon with a reply to your message."
+        }
+    ]
+};

@@ -2,6 +2,27 @@
 
 ## Work in progress (folked 2023-12-02 - working on it gradually)
 
+## Point to note
+
+* Mailpit works on port 8025, not 8090
+* Mailpit will also need installing on you system (I've yet to look to see if I can simple include it as a dependency)
+
+## Current State
+
+* mpGetMailsBySubject() - working
+* mpFirst() - working
+* mpGetHtml() - working
+* mpDeleteAll() - working
+
+## Plans
+
+* Create a repository so that people can use any mail program they like (MailHog, Mailpit etc), and just switch out the binding
+* Write proxy functions so that others can simple install it and use it as a drop-in replacement for cypress-mailhog
+* Continue converting functions to mailpit
+* Write tests (currently I'm writing it and using my dev project for the tests)
+* ...
+
+## Original readme, with a few alterations
 A collection of useful Cypress commands for Mailpit 🐗.
 
 This package supports TypeScript out of the box.
@@ -65,99 +86,99 @@ or add `mailpitUsername` and `mailpitPassword` in Cypress env config
 
 ### Mail Collection
 
-#### mhGetAllMails( limit=50, options={timeout=defaultCommandTimeout} )
+#### mpGetAllMails( limit=50, options={timeout=defaultCommandTimeout} )
 
 Yields an array of all the mails stored in Mailpit. This retries automatically until mails are found (or until timeout is reached).
 
 ```JavaScript
 cy
-  .mhGetAllMails()
+  .mpGetAllMails()
   .should('have.length', 1);
 ```
 
-#### mhGetMailsBySubject( subject, limit=50, options={timeout=defaultCommandTimeout} )
+#### mpGetMailsBySubject( subject, limit=50, options={timeout=defaultCommandTimeout} )
 
 Yields an array of all mails with given subject. This retries automatically until mails are found (or until timeout is reached).
 
 ```JavaScript
 cy
-  .mhGetMailsBySubject('My Subject')
+  .mpGetMailsBySubject('My Subject')
   .should('have.length', 1);
 ```
 
-#### mhGetMailsBySender( from, limit=50, options={timeout=defaultCommandTimeout} )
+#### mpGetMailsBySender( from, limit=50, options={timeout=defaultCommandTimeout} )
 
 Yields an array of all mails with given sender. This retries automatically until mails are found (or until timeout is reached).
 
 ```JavaScript
 cy
-  .mhGetMailsBySender('sender@example.com')
+  .mpGetMailsBySender('sender@example.com')
   .should('have.length', 1);
 ```
 
-#### mhGetMailsByRecipient( recipient, limit=50 )
+#### mpGetMailsByRecipient( recipient, limit=50 )
 
 Yields an array of all mails with given recipient.
 
 ```JavaScript
 cy
-  .mhGetMailsByRecipient('recipient@example.com')
+  .mpGetMailsByRecipient('recipient@example.com')
   .should('have.length', 1);
 ```
 
-#### mhFirst()
+#### mpFirst()
 
 Yields the first mail of the loaded selection.
 
 ```JavaScript
 cy
-  .mhGetAllMails()
+  .mpGetAllMails()
   .should('have.length', 1)
-  .mhFirst();
+  .mpFirst();
 ```
 
-#### mhDeleteAll()
+#### mpDeleteAll()
 
 Deletes all stored mails from Mailpit.
 
 ```JavaScript
-cy.mhDeleteAll();
+cy.mpDeleteAll();
 ```
 
 ### Collection Filtering 🪮
 
 **Note:** the below described filter functions can be chained together to build complex filters. They are currently not automatically retrying. So make sure to either wait a certain time before fetching your mails or to implement you own re-try logic.
 
-#### mhFilterBySubject( subject )
+#### mpFilterBySubject( subject )
 
 Filters the current mails in context by subject and returns the filtered mail list.
 
 ```JavaScript
 cy
-  .mhGetMailsBySender('sender@example.com')
-  .mhFilterBySubject('My Subject')
+  .mpGetMailsBySender('sender@example.com')
+  .mpFilterBySubject('My Subject')
   .should('have.length', 1);
 ```
 
-#### mhFilterByRecipient( recipient )
+#### mpFilterByRecipient( recipient )
 
 Filters the current mails in context by recipient and returns the filtered mail list.
 
 ```JavaScript
 cy
-  .mhGetMailsBySender('sender@example.com')
-  .mhFilterByRecipient('recipient@example.com')
+  .mpGetMailsBySender('sender@example.com')
+  .mpFilterByRecipient('recipient@example.com')
   .should('have.length', 1);
 ```
 
-#### mhFilterBySender( sender )
+#### mpFilterBySender( sender )
 
 Filters the current mails in context by sender and returns the filtered mail list.
 
 ```JavaScript
 cy
-  .mhGetMailsByRecipient('recipient@example.com')
-  .mhFilterBySender('sender@example.com')
+  .mpGetMailsByRecipient('recipient@example.com')
+  .mpFilterBySender('sender@example.com')
   .should('have.length', 1);
 ```
 
@@ -167,144 +188,121 @@ Filters can be infinitely chained together.
 
 ```JavaScript
 cy
-  .mhGetAllMails()
-  .mhFilterBySubject('My Subject')
-  .mhFilterByRecipient('recipient@example.com')
-  .mhFilterBySender('sender@example.com')
+  .mpGetAllMails()
+  .mpFilterBySubject('My Subject')
+  .mpFilterByRecipient('recipient@example.com')
+  .mpFilterBySender('sender@example.com')
   .should('have.length', 1);
 ```
 
 ### Handling a Single Mail ✉️
 
-#### mhGetSubject()
+#### mpGetSubject()
 
 Yields the subject of the current mail.
 
 ```JavaScript
 cy
-  .mhGetAllMails()
+  .mpGetAllMails()
   .should('have.length', 1)
-  .mhFirst()
-  .mhGetSubject()
+  .mpFirst()
+  .mpGetSubject()
   .should('eq', 'My Mails Subject');
 ```
 
-#### mhGetBody()
+#### mpGetBody()
 
 Yields the body of the current mail.
 
 ```JavaScript
 cy
-  .mhGetAllMails()
+  .mpGetAllMails()
   .should('have.length', 1)
-  .mhFirst()
-  .mhGetBody()
+  .mpFirst()
+  .mpGetBody()
   .should('contain', 'Part of the Message Body');
 ```
 
-#### mhGetSender()
+#### mpGetSender()
 
 Yields the sender of the current mail.
 
 ```JavaScript
 cy
-  .mhGetAllMails()
+  .mpGetAllMails()
   .should('have.length', 1)
-  .mhFirst()
-  .mhGetSender()
+  .mpFirst()
+  .mpGetSender()
   .should('eq', 'sender@example.com');
 ```
 
-#### mhGetRecipients()
+#### mpGetRecipients()
 
 Yields the recipient of the current mail.
 
 ```JavaScript
 cy
-  .mhGetAllMails()
+  .mpGetAllMails()
   .should('have.length', 1)
-  .mhFirst()
-  .mhGetRecipients()
+  .mpFirst()
+  .mpGetRecipients()
   .should('contain', 'recipient@example.com');
 ```
 
-#### mhGetAttachments()
+#### mpGetAttachments()
 
 Yields the list of all file names of the attachments of the current mail.
 
 ```JavaScript
 cy
-  .mhGetAllMails()
+  .mpGetAllMails()
   .should('have.length', 1)
-  .mhFirst()
-  .mhGetAttachments()
+  .mpFirst()
+  .mpGetAttachments()
   .should('have.length', 2)
   .should('include', 'sample.pdf');
 ```
 
 ### Asserting the Mail Collection 🔍
 
-#### mhHasMailWithSubject( subject )
+#### mpHasMailWithSubject( subject )
 
 Asserts if there is a mail with given subject.
 
 ```JavaScript
-cy.mhHasMailWithSubject('My Subject');
+cy.mpHasMailWithSubject('My Subject');
 ```
 
-#### mhHasMailFrom( from )
+#### mpHasMailFrom( from )
 
 Asserts if there is a mail from given sender.
 
 ```JavaScript
-cy.mhHasMailFrom('sender@example.com');
+cy.mpHasMailFrom('sender@example.com');
 ```
 
-#### mhHasMailTo( recipient )
+#### mpHasMailTo( recipient )
 
 Asserts if there is a mail to given recipient (looks for "To", "CC" and "BCC").
 
 ```JavaScript
-cy.mhHasMailTo('recipient@example.com');
+cy.mpHasMailTo('recipient@example.com');
 ```
 
 ### Helper Functions ⚙️
 
-#### mhWaitForMails( moreMailsThen = 0 )
+#### mpWaitForMails( moreMailsThen = 0 )
 
 Waits until more then <`moreMailsThen`> mails are available on Mailpit.
-This is especially useful when using the `mhFilterBy<X>` functions, since they do not support automatic retrying.
+This is especially useful when using the `mpFilterBy<X>` functions, since they do not support automatic retrying.
 
 ```JavaScript
 // this waits until there are at least 10 mails on Mailpit
 cy
-  .mhWaitForMails(9)
-  .mhGetAllMails()
-  .mhFilterBySender("sender-10@example.com")
+  .mpWaitForMails(9)
+  .mpGetAllMails()
+  .mpFilterBySender("sender-10@example.com")
   .should("have.length", 1);
-```
-
-### Jim Chaos Monkey 🐵
-
-#### mhGetJimMode()
-
-Returns if Jim is enabled / disabled.
-
-```JavaScript
-cy
-  .mhGetJimMode()
-  .should('eq', true);
-```
-
-#### mhSetJimMode( enabled )
-
-Enables / Disables Jim chaos monkey.
-
-```JavaScript
-cy
-  .mhSetJimMode(true)
-  .mhGetJimMode()
-  .should('eq', true);
 ```
 
 ## Package Development
@@ -330,7 +328,7 @@ Start docker server.
 docker-compose up
 ```
 
-Open the test page in your browser: [http://localhost:3000/cypress-mh-tests/](http://localhost:3000/cypress-mh-tests/)
+Open the test page in your browser: [http://localhost:3000/cypress-mp-tests/](http://localhost:3000/cypress-mp-tests/)
 
 Open Mailpit in your browser: [http://localhost:8025/](http://localhost:8025/)
 
