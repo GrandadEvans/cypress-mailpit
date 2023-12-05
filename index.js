@@ -1,94 +1,76 @@
+/* eslint-disable no-unused-vars */
 const apiVersion = "v1";
+// eslint-disable-next-line prefer-const
+let messageCount = 0;
+// eslint-disable-next-line prefer-const
+let messages = [];
 
 const mpApiUrl = (path) => {
-  const envValue = Cypress.env("mailpitUrl");
-  const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
-  return `${basePath}/api/${apiVersion}${path}`;
+    const envValue = Cypress.env("mailpitUrl");
+    const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
+    return `${basePath}/api/${apiVersion}${path}`;
 };
 
 const mpMessageSummary = (id) => {
-  const envValue = Cypress.env("mailpitUrl");
-  const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
-  return `${basePath}/api/${apiVersion}/message/${id}`;
-};
-
-const mpGetMessageContent = (id, type = 'html') => {
-  const envValue = Cypress.env("mailpitUrl");
-  const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
-  return `${basePath}/view/${id}.${type.toLowerCase()}`;
+    const envValue = Cypress.env("mailpitUrl");
+    const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
+    return `${basePath}/api/${apiVersion}/message/${id}`;
 };
 
 let mpAuth = Cypress.env("mailpitAuth") || "";
 if (Cypress.env("mailpitUsername") && Cypress.env("mailpitPassword")) {
-  mpAuth = {
-    user: Cypress.env("mailpitUsername"),
-    pass: Cypress.env("mailpitPassword"),
-  };
+    mpAuth = {
+        user: Cypress.env("mailpitUsername"),
+        pass: Cypress.env("mailpitPassword"),
+    };
 }
 
-let messageCount = 0;
-
-const refreshMessages = (limit) => {
-  return cy
-    .request({
-      method: "GET",
-      url: mpApiUrl(`/messages?limit=${limit}`),
-      auth: mpAuth,
-      log: false,
-    })
-    .then((response) => {
-      if (typeof response.body === "string") {
-        let parsed = JSON.parse(response.body);
-        messageCount = parsed.count;
-        messages = parsed.messages;
-      } else {
-        messageCount = 0;
-        messages = [];
-      }
-    });
-};
-
-let messages = [];
-
 Cypress.Commands.add("mpGetMailsBySubject", { prevSubject: false }, (subject) => {
-  return searchMessages(`subject:"${subject}"`).then((data) => data.messages);
+    return searchMessages(`subject:"${subject}"`).then((data) => data.messages);
 });
 
 Cypress.Commands.add("mpFirst", { prevSubject: true }, (messages) => {
-  if (messages && messages.length > 0) {
-    return messages[0];
-  }
-  // You should handle the case when there are no messages as well.
-  throw new Error('No messages found.');
+    if (messages && messages.length > 0) {
+        return messages[0];
+    }
+    // You should handle the case when there are no messages as well.
+    throw new Error("No messages found.");
 });
 
- // TODO: Change this to cy.request
 const searchMessages = (query) => {
-  return fetch(mpApiUrl(`/search?query=${query}`))
-    .then((response) => response.json())
-    .then((data) => data)
-    .catch((error) => console.error('Error:', error));
-}
+    return fetch(mpApiUrl(`/search?query=${query}`))
+        .then((response) => response.json())
+        .then((data) => data)
+        .catch((error) => console.error("Error:", error));
+};
 
 Cypress.Commands.add("mpDeleteAll", () => {
-  return cy.request({
-    method: "DELETE",
-    url: mpApiUrl("/messages"),
-    auth: mpAuth,
-  });
+    return cy.request({
+        method: "DELETE",
+        url: mpApiUrl("/messages"),
+        auth: mpAuth,
+    });
 });
 
-Cypress.Commands.add("mpGetHtml", {prevSubject: true}, (message) => {
-  return cy.request({
-    method: "GET",
-    url: mpApiUrl(`/message/${message.ID}`),
-    auth: mpAuth,
-  })
-  .then((response) => response.body.HTML);
+Cypress.Commands.add("mpGetHtml", { prevSubject: true }, (message) => {
+    return cy.request({
+        method: "GET",
+        url: mpApiUrl(`/message/${message.ID}`),
+        auth: mpAuth,
+    })
+        .then((response) => response.body.HTML);
+});
+
+Cypress.Commands.add("mpGetText", { prevSubject: true }, (message) => {
+    return cy.request({
+        method: "GET",
+        url: mpApiUrl(`/message/${message.ID}`),
+        auth: mpAuth,
+    })
+        .then((response) => response.body.Text);
 });
 
 /**
-
 Cypress.Commands.addQuery("mpGetAllMails", function (limit = 50, options = {}) {
   if (messageCount > 0) {
     return refreshMessages(limit);
@@ -225,60 +207,3 @@ Cypress.Commands.add("mpGetAttachments", { prevSubject: true }, (mail) => {
   return cy.wrap(attachments);
 });
 */
-
-const sampleMessages = {
-    "total": 2,
-    "unread": 2,
-    "count": 2,
-    "messages_count": 2,
-    "start": 0,
-    "tags": [],
-    "messages": [
-        {
-            "ID": "53435c87-d0c3-4bd3-8dfe-173cf560dba5",
-            "MessageID": "ca6a1583a5037878956e2d983df3ffe7@buttons.grandadevans.com",
-            "Read": false,
-            "From": {
-                "Name": "Buttons Cat Rescue",
-                "Address": "admin@buttons.grandadevans.com"
-            },
-            "To": [
-                {
-                    "Name": "",
-                    "Address": "admin@buttons.grandadevans.com"
-                }
-            ],
-            "Cc": [],
-            "Bcc": [],
-            "Subject": "Adoption Form Submission",
-            "Created": "2023-12-03T23:46:50.797Z",
-            "Tags": [],
-            "Size": 3684,
-            "Attachments": 0,
-            "Snippet": "Hi Email-type-person, This is just a email to say that somebody has taken their time to fill in an adoption form. Here is a copy of what they sent us, so that you can always find it in a search. -----..."
-        },
-        {
-            "ID": "46db884d-3d96-4126-a250-342d5f41c7ea",
-            "MessageID": "d1e09a29f6819c2ed97fbcaf1dfe37dc@buttons.grandadevans.com",
-            "Read": false,
-            "From": {
-                "Name": "Buttons Cat Rescue",
-                "Address": "admin@buttons.grandadevans.com"
-            },
-            "To": [
-                {
-                    "Name": "",
-                    "Address": "dev@buttonscatrescue.co.uk"
-                }
-            ],
-            "Cc": [],
-            "Bcc": [],
-            "Subject": "Adoption form submission (auto-reply)",
-            "Created": "2023-12-03T23:46:50.75Z",
-            "Tags": [],
-            "Size": 1197,
-            "Attachments": 0,
-            "Snippet": "-- AUTOREPLY -- Hi Billy Bob Thornton, This is just a quick email to say thanks for getting in touch, and somebody should be back in touch with you soon with a reply to your message."
-        }
-    ]
-};

@@ -1,6 +1,6 @@
 # cypress-mailpit
 
-## Work in progress (folked 2023-12-02 - working on it gradually)
+## Work in progress
 
 ## Point to note
 
@@ -12,7 +12,28 @@
 * mpGetMailsBySubject() - working
 * mpFirst() - working
 * mpGetHtml() - working
+* mpGetText() - working
 * mpDeleteAll() - working
+
+## Changelog
+
+### v0.0.3
+
+* Added mpGetText() to get the text version of a message
+* Increased spacing to 4
+* Extensive reformatting ready for conversion to TS
+* Configured a few .eslint rules for my preference
+* Changed Cypress version requirement to 12+, as I want to use Cypress.command.addQuery
+* Still not written any tests!
+
+### v0.0.2
+
+* Added mpGetHtml to get the Html version of a message
+
+### v0.0.1
+
+* Initial fork of the project, so that I can get Cypress to run with Mailpit, as MailHog hasn't been touched recently.
+* Simple rename from 'mh...' to 'mp...' method names'
 
 ## Plans
 
