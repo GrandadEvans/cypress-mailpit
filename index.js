@@ -6,12 +6,10 @@ let messageCount = 0;
 let messages = [];
 
 const mpApiUrl = (path) => {
-    const envValue = Cypress.env("mailpitUrl");
-    const basePath = envValue ? envValue : Cypress.config("mailpitUrl");
-    if (!!basePath.length) {
-      basePath = "http://127.0.0.1:8025";
-    }
-    return `${basePath}/api/${apiVersion}${path}`;
+  const envValue = Cypress.env("mailpitUrl");
+  const basePath = envValue || Cypress.config("mailpitUrl") || "http://127.0.0.1:8025";
+
+  return `${basePath}/api/${apiVersion}${path}`;
 };
 
 const mpMessageSummary = (id) => {

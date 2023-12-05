@@ -17,6 +17,10 @@
 
 ## Changelog
 
+### v0.0.6
+
+* Simply previous refactor
+
 ### v0.0.5
 
 * Simple refactor of mpMessageSummary to remove duplicate code
