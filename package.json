@@ -1,6 +1,6 @@
 {
   "name": "@grandadevans/cypress-mailpit",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Test emails in Cypress using Mailpit",
   "main": "index.js",
   "types": "types/index.d.ts",

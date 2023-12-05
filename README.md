@@ -17,6 +17,10 @@
 
 ## Changelog
 
+### v0.0.4
+
+* Set a default for the Mailpit UI
+
 ### v0.0.3
 
 * Added mpGetText() to get the text version of a message
