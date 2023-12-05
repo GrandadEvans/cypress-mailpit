@@ -17,6 +17,10 @@
 
 ## Changelog
 
+### v0.0.5
+
+* Simple refactor of mpMessageSummary to remove duplicate code
+
 ### v0.0.4
 
 * Set a default for the Mailpit UI
