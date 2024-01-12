@@ -7,7 +7,7 @@ let messages = [];
 
 const mpApiUrl = (path) => {
   const envValue = Cypress.env("mailpitUrl");
-  const basePath = envValue || Cypress.config("mailpitUrl") || "http://127.0.0.1:8025";
+  const basePath = envValue || Cypress.config("mailpitUrl") || "http://localhost:8025";
 
   return `${basePath}/api/${apiVersion}${path}`;
 };
